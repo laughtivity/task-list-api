@@ -227,6 +227,7 @@ If the HTTP request is missing `description`, we should also get this response:
 }
 ```
 
+### PER INSTRUCTOR CAN IGNORE
 #### Missing `completed_at`
 
 If the HTTP request is missing `completed_at`, we should also get this response:
