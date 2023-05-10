@@ -16,28 +16,20 @@ def validate_model(cls, model_id):
     model = cls.query.get(model_id)
 
     if not model:
-        abort(make_response({"message:" : f"{cls.__name__} {model_id} does not exist"},404))
+        abort(make_response({"message" : f"{cls.__name__} {model_id} does not exist"},404))
     
-    complete_model = title_description_provided(model)
-
-    return complete_model
-
-def title_description_provided(model):
-    if not model.title:
-        abort(make_response())
-    elif not model.description:
-        abort(make_response())
-    else:
-        return model
-
+    return model
 
 # POST METHOD - create a task 
 @task_bp.route("", methods = ["POST"])
 def create_task():
     request_body = request.get_json()
-
-    new_task = Task.from_dict(request_body)
-
+    
+    try:
+        new_task = Task.from_dict(request_body)
+    except:
+        return jsonify({"details": "Invalid data"}),400
+    
     db.session.add(new_task)
     db.session.commit()
 
@@ -47,8 +39,7 @@ def create_task():
             "title": new_task.title,
             "description": new_task.description,
             "is_complete": new_task.is_complete
-
-        }, 
+            }
     }), 201
 
 # GET METHOD - read all task
