@@ -24,7 +24,7 @@ def validate_model(cls, model_id):
 @task_bp.route("", methods = ["POST"])
 def create_task():
     request_body = request.get_json()
-    
+
     try:
         new_task = Task.from_dict(request_body)
     except:
@@ -51,8 +51,16 @@ def get_all_tasks():
 
     for task in tasks:
         tasks_response.append(task.to_dict())
-    
+
+# https://www.programiz.com/python-programming/methods/list/sort
+    sort_query = request.args.get("sort")
+    if sort_query == "asc":
+        tasks_response.sort(key=lambda x: x.get('title'))
+    elif sort_query == "desc":
+        tasks_response.sort(key=lambda x: x.get('title'), reverse=True)
+
     return jsonify(tasks_response)
+
 
 
 # GET METHOD - read a task by task id
@@ -97,3 +105,9 @@ def delete_task(task_id):
     return { "details": f'Task {task_id} "{task.title}" successfully deleted'}
 
 
+## WAVE 3 - Creating Custom Endpoints 
+# PUT METHOD - update is_complete to true
+@task_bp.route("/<task_id>/mark_complete", methods = ["PUT"])
+
+# PUT METHOD - update is_complete to false
+@task_bp.route("/<task_id>/mark_incomplete", methods = ["PUT"])
