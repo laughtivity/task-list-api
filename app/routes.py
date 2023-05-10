@@ -2,10 +2,10 @@ from flask import Blueprint, jsonify, request, abort, make_response
 from app import db
 from app.models.task import Task
 
-# BLUEPRINTS
+# BLUEPRINTS #
 task_bp = Blueprint("tasks", __name__, url_prefix = "/tasks")
 
-# HELPER FUNCTIONS
+# HELPER FUNCTIONS #
 def validate_model(cls, model_id):
     # makes sure the data type is an integer
     try: 
@@ -13,17 +13,25 @@ def validate_model(cls, model_id):
     except ValueError:
         abort(make_response({"message": f"{model_id} is not a valid type. A {(type(model_id))} data type was provided. Must be a valid integer data type."},400))
     
-    # model_id is confirmed an integer so connect with db
-    # changed Crystal to cls to utilize
     model = cls.query.get(model_id)
 
     if not model:
         abort(make_response({"message:" : f"{cls.__name__} {model_id} does not exist"},404))
     
-    return model
+    complete_model = title_description_provided(model)
+
+    return complete_model
+
+def title_description_provided(model):
+    if not model.title:
+        abort(make_response())
+    elif not model.description:
+        abort(make_response())
+    else:
+        return model
+
+
 # POST METHOD - create a task 
-# - complete_at defaults with null
-# RETURN - 201 CREATED // task: id / title/ description / is complete
 @task_bp.route("", methods = ["POST"])
 def create_task():
     request_body = request.get_json()
@@ -44,9 +52,6 @@ def create_task():
     }), 201
 
 # GET METHOD - read all task
-# - id / title / description / is_complete
-# RETURN - 200 OK, empty list if no saved tasks
-# RETURN - 200 OK, list w/ id / title / description / is complete 
 @task_bp.route("", methods = ["GET"])
 def get_all_tasks():
     tasks_response = []
@@ -60,7 +65,6 @@ def get_all_tasks():
 
 
 # GET METHOD - read a task by task id
-# RETURN - 200 OK, task : id / title / description / is complete
 @task_bp.route("/<task_id>", methods = ["GET"])
 def get_by_task_id(task_id):
     task = validate_model(Task, task_id)
@@ -71,6 +75,34 @@ def get_by_task_id(task_id):
 
 
 # PUT METHOD - update a task by id
-# - update title
-# - update description
-# RETURN - 
+@task_bp.route("/<task_id>", methods = ["PUT"])
+def update_task(task_id):
+    task = validate_model(Task,task_id)
+
+    request_body = request.get_json()
+
+    task.title = request_body["title"]
+    task.description = request_body["description"]
+
+    db.session.commit()
+
+    return jsonify({
+        "task": {
+            "id": task.task_id,
+            "title": task.title,
+            "description": task.description,
+            "is_complete": task.is_complete
+            }
+        }), 200
+
+# DELETE METHOD - delete a task by id
+@task_bp.route("/<task_id>", methods=["DELETE"])
+def delete_task(task_id):
+    task = validate_model(Task, task_id)
+
+    db.session.delete(task)
+    db.session.commit()
+
+    return { "details": f'Task {task_id} "{task.title}" successfully deleted'}
+
+
