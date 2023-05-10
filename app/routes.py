@@ -48,7 +48,7 @@ def create_task():
 # RETURN - 200 OK, empty list if no saved tasks
 # RETURN - 200 OK, list w/ id / title / description / is complete 
 @task_bp.route("", methods = ["GET"])
-def read_all_tasks():
+def get_all_tasks():
     tasks_response = []
 
     tasks = Task.query.all()
@@ -62,10 +62,12 @@ def read_all_tasks():
 # GET METHOD - read a task by task id
 # RETURN - 200 OK, task : id / title / description / is complete
 @task_bp.route("/<task_id>", methods = ["GET"])
-def read_by_task_id(task_id):
+def get_by_task_id(task_id):
     task = validate_model(Task, task_id)
 
-    return task.to_dict(), 200
+    return {
+        "task": task.to_dict()
+        }, 200
 
 
 # PUT METHOD - update a task by id
