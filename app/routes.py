@@ -198,7 +198,7 @@ def create_goal():
     return jsonify({
         "goal": {
             "id": new_goal.goal_id,
-            "title": new_goal.goal_title
+            "title": new_goal.title
             }
         }), 201
 # GET METHOD - get all goals
@@ -214,9 +214,9 @@ def get_all_goals():
 # https://www.programiz.com/python-programming/methods/list/sort
     sort_query = request.args.get("sort")
     if sort_query == "asc":
-        goals_response.sort(key=lambda x: x.get('goal_title'))
+        goals_response.sort(key=lambda x: x.get('title'))
     elif sort_query == "desc":
-        goals_response.sort(key=lambda x: x.get('goal_title'), reverse=True)
+        goals_response.sort(key=lambda x: x.get('title'), reverse=True)
 
     return jsonify(goals_response)
 
@@ -235,14 +235,14 @@ def update_goal(goal_id):
 
     request_body = request.get_json()
 
-    goal.goal_title = request_body["title"]
+    goal.title = request_body["title"]
 
     db.session.commit()
 
     return jsonify({
         "goal": {
             "id": goal.goal_id,
-            "title": goal.goal_title
+            "title": goal.title
             }
         }), 200
 
@@ -255,8 +255,63 @@ def delete_goal(goal_id):
     db.session.delete(goal)
     db.session.commit()
 
-    return { "details": f'Goal {goal_id} "{goal.goal_title}" successfully deleted'}
+    return { "details": f'Goal {goal_id} "{goal.title}" successfully deleted'}
 
 
 
-#
+# POST METHOD - Create a task by goal_id linking it to a goal
+# @goal_bp.route("/<goal_id>/tasks", methods = ["POST"])
+# def create_task_by_goal_id(goal_id):
+#     goal = validate_model(Goal, goal_id)
+#     request_body = request.get_json()
+
+#     new_task = Task(
+#             title = request_body["title"],
+#             description = request_body["description"]
+#         )
+#     db.session.add(new_task)
+#     db.session.commit()
+
+#     # COME BACK TO COMPLETE
+#     return "..."
+
+# POST METHOD - post adds a list of task_ids
+@goal_bp.route("/<goal_id>/tasks", methods = ["POST"])
+def add_tasks_to_existing_goal(goal_id):
+    goal = validate_model(Goal, goal_id)
+    
+    request_body = request.get_json()
+
+    task_ids = request_body["task_ids"]
+    # goal_task_list = goal.tasks
+
+    # print("task_ids", task_ids)
+    for id in task_ids:
+        task = validate_model(Task,id)
+        goal.tasks.append(task)
+
+    db.session.commit()
+
+    return {
+        "id": goal.goal_id,
+        "task_ids": task_ids
+    }
+
+@goal_bp.route("/<goal_id>/tasks", methods = ["GET"])
+def read_all_tasks_for_goal_id(goal_id):
+    goal = validate_model(Goal, goal_id)
+
+    task_response = []
+    for task in goal.tasks:
+        task_response.append(task.to_dict())
+    print("print task response: ", task_response)
+
+    return jsonify({
+        "id": goal.goal_id,
+        "title": goal.title,
+        "tasks": task_response
+    }), 200
+
+
+
+

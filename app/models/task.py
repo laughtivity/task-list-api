@@ -22,6 +22,15 @@ class Task(db.Model):
     # method that is used on an object - instance of a class 
     # after the object is created an object
     def to_dict(self):
+        if self.goal_id:
+            return {
+            "id":self.task_id,
+            "goal_id": self.goal_id,
+            "title":self.title,
+            "description":self.description,
+            "is_complete": self.is_complete
+        }
+
         return {
             "id":self.task_id,
             "title":self.title,
