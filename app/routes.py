@@ -166,7 +166,9 @@ def mark_incomplete(task_id):
 #         channel="C056SCXBCJ3",
 #         text = f"Someone just completed the task {task.title}" 
 #         )
+
 ### SLACK IMPLEMENTATION USING HTTP REQUESTS
+# https://stackoverflow.com/questions/63899742/how-to-use-mock-in-request-post-to-an-external-api
 def slack_bot_notification(task):
     import os
 
@@ -179,7 +181,6 @@ def slack_bot_notification(task):
         }
 
     response = requests.post(api_url, headers=headers, data=body)
-
     
 # POST METHOD - create a goal
 @goal_bp.route("", methods=["POST"])
@@ -255,3 +256,7 @@ def delete_goal(goal_id):
     db.session.commit()
 
     return { "details": f'Goal {goal_id} "{goal.goal_title}" successfully deleted'}
+
+
+
+#
