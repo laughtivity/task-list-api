@@ -25,7 +25,20 @@ def validate_model(cls, model_id):
     
     return model
 
-# POST METHOD - create a task 
+def slack_bot_notification(task):
+# SLACK IMPLEMENTATION USING HTTP REQUESTS
+# https://stackoverflow.com/questions/63899742/how-to-use-mock-in-request-post-to-an-external-api
+    import os
+
+    api_url = "https://slack.com/api/chat.postMessage"
+    slack_token = os.environ.get("SLACK_WEB_API_KEY")
+    headers = {"Authorization":slack_token}
+    body = {
+        "channel": "task-notifications",
+        "text": "Hello, World Again!"
+        }
+    response = requests.post(api_url, headers=headers, data=body)
+    
 @task_bp.route("", methods = ["POST"])
 def create_task():
     request_body = request.get_json()
@@ -57,7 +70,8 @@ def get_all_tasks():
     for task in tasks:
         tasks_response.append(task.to_dict())
 
-# https://www.programiz.com/python-programming/methods/list/sort
+    # https://www.programiz.com/python-programming/methods/list/sort
+    # sort by asc/desc
     sort_query = request.args.get("sort")
     if sort_query == "asc":
         tasks_response.sort(key=lambda x: x.get('title'))
@@ -65,8 +79,6 @@ def get_all_tasks():
         tasks_response.sort(key=lambda x: x.get('title'), reverse=True)
 
     return jsonify(tasks_response)
-
-
 
 # GET METHOD - read a task by task id
 @task_bp.route("/<task_id>", methods = ["GET"])
@@ -77,16 +89,17 @@ def get_by_task_id(task_id):
         "task": task.to_dict()
         }, 200
 
-
 # PUT METHOD - update a task by id
 @task_bp.route("/<task_id>", methods = ["PUT"])
 def update_task(task_id):
     task = validate_model(Task,task_id)
 
     request_body = request.get_json()
-
-    task.title = request_body["title"]
-    task.description = request_body["description"]
+    try:
+        task.title = request_body["title"]
+        task.description = request_body["description"]
+    except:
+        return jsonify({"details": "Missing data"}),400
 
     db.session.commit()
 
@@ -110,7 +123,7 @@ def delete_task(task_id):
     return { "details": f'Task {task_id} "{task.title}" successfully deleted'}
 
 
-## WAVE 3 - Creating Custom Endpoints 
+
 # PUT METHOD - update is_complete to true
 @task_bp.route("/<task_id>/mark_complete", methods = ["PATCH"])
 def mark_complete(task_id):
@@ -140,48 +153,8 @@ def mark_incomplete(task_id):
         "task": task.to_dict()
         }, 200
 
-# slack bot task completed notification
-# https://www.mechanicalgirl.com/post/building-simple-slack-app-using-flask/
-# https://api.slack.com/methods/chat.postMessage/test
-# https://realpython.com/getting-started-with-the-slack-api-using-python-and-flask/
-# https://stackoverflow.com/questions/41546883/what-is-the-use-of-python-dotenv
-# https://slack.dev/python-slack-sdk/web/index.html
-# https://github.com/SlackAPI/python-slack-sdk
-# alternative method: use url and request.post() - will need Bearer
-####################################
-# PYTHON SLACK IMPLEMENTATION METHOD
-####################################
-# def slack_bot_notification(task):
-#     from dotenv import load_dotenv
-#     import os
-    
-#     load_dotenv()
-#     slack_token= os.environ.get("SLACK_API_KEY")
 
-#     from slack_sdk import WebClient
-#     client = WebClient(token=slack_token)
-#     # print(slack_token)
 
-#     response = client.chat_postMessage(
-#         channel="C056SCXBCJ3",
-#         text = f"Someone just completed the task {task.title}" 
-#         )
-
-### SLACK IMPLEMENTATION USING HTTP REQUESTS
-# https://stackoverflow.com/questions/63899742/how-to-use-mock-in-request-post-to-an-external-api
-def slack_bot_notification(task):
-    import os
-
-    api_url = "https://slack.com/api/chat.postMessage"
-    slack_token = os.environ.get("SLACK_WEB_API_KEY")
-    headers = {"Authorization":slack_token}
-    body = {
-        "channel": "task-notifications",
-        "text": "Hello, World Again!"
-        }
-
-    response = requests.post(api_url, headers=headers, data=body)
-    
 # POST METHOD - create a goal
 @goal_bp.route("", methods=["POST"])
 def create_goal():
@@ -201,6 +174,7 @@ def create_goal():
             "title": new_goal.title
             }
         }), 201
+
 # GET METHOD - get all goals
 @goal_bp.route("", methods=["GET"])
 def get_all_goals():
@@ -257,24 +231,6 @@ def delete_goal(goal_id):
 
     return { "details": f'Goal {goal_id} "{goal.title}" successfully deleted'}
 
-
-
-# POST METHOD - Create a task by goal_id linking it to a goal
-# @goal_bp.route("/<goal_id>/tasks", methods = ["POST"])
-# def create_task_by_goal_id(goal_id):
-#     goal = validate_model(Goal, goal_id)
-#     request_body = request.get_json()
-
-#     new_task = Task(
-#             title = request_body["title"],
-#             description = request_body["description"]
-#         )
-#     db.session.add(new_task)
-#     db.session.commit()
-
-#     # COME BACK TO COMPLETE
-#     return "..."
-
 # POST METHOD - post adds a list of task_ids
 @goal_bp.route("/<goal_id>/tasks", methods = ["POST"])
 def add_tasks_to_existing_goal(goal_id):
@@ -313,5 +269,31 @@ def read_all_tasks_for_goal_id(goal_id):
     }), 200
 
 
+# slack bot task completed notification
+# https://www.mechanicalgirl.com/post/building-simple-slack-app-using-flask/
+# https://api.slack.com/methods/chat.postMessage/test
+# https://realpython.com/getting-started-with-the-slack-api-using-python-and-flask/
+# https://stackoverflow.com/questions/41546883/what-is-the-use-of-python-dotenv
+# https://slack.dev/python-slack-sdk/web/index.html
+# https://github.com/SlackAPI/python-slack-sdk
+# alternative method: use url and request.post() - will need Bearer
+####################################
+# PYTHON SLACK IMPLEMENTATION METHOD
+####################################
+# def slack_bot_notification(task):
+#     from dotenv import load_dotenv
+#     import os
+    
+#     load_dotenv()
+#     slack_token= os.environ.get("SLACK_API_KEY")
+
+#     from slack_sdk import WebClient
+#     client = WebClient(token=slack_token)
+#     # print(slack_token)
+
+#     response = client.chat_postMessage(
+#         channel="C056SCXBCJ3",
+#         text = f"Someone just completed the task {task.title}" 
+#         )
 
 
