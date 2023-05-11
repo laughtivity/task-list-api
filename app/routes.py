@@ -146,7 +146,6 @@ def mark_incomplete(task_id):
 # https://stackoverflow.com/questions/41546883/what-is-the-use-of-python-dotenv
 # https://slack.dev/python-slack-sdk/web/index.html
 # https://github.com/SlackAPI/python-slack-sdk
-
 def slack_bot_notification(task):
     from dotenv import load_dotenv
     import os
@@ -162,3 +161,30 @@ def slack_bot_notification(task):
         channel="C056SCXBCJ3",
         text = f"Someone just completed the task {task.title}" 
         )
+    
+# POST METHOD - create a goal
+@goal_bp.route("", methods=["POST"])
+def create_goal():
+    request_body = request.get_json()
+
+    try:
+        new_goal = Goal.from_dict(request_body)
+    except:
+        return jsonify({"details": "Invalid data"}), 400
+    
+    db.session.add(new_goal)
+    db.session.commit()
+
+    return jsonify({
+        "goal": {
+            "id": new_goal.goal_id,
+            "title": new_goal.goal_title
+            }
+        }), 201
+# GET METHOD - get all goals
+
+# GET METHOD - get one goal by goal_id
+
+# PUT METHOD - update goal by goal_id
+
+# DELETE METHOD - delete a goal by goal_id
