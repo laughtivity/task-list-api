@@ -182,9 +182,57 @@ def create_goal():
             }
         }), 201
 # GET METHOD - get all goals
+@goal_bp.route("", methods=["GET"])
+def get_all_goals():
+    goals_response = []
+
+    goals = Goal.query.all()
+
+    for goal in goals:
+        goals_response.append(goal.to_dict())
+
+# https://www.programiz.com/python-programming/methods/list/sort
+    sort_query = request.args.get("sort")
+    if sort_query == "asc":
+        goals_response.sort(key=lambda x: x.get('goal_title'))
+    elif sort_query == "desc":
+        goals_response.sort(key=lambda x: x.get('goal_title'), reverse=True)
+
+    return jsonify(goals_response)
 
 # GET METHOD - get one goal by goal_id
+@goal_bp.route("/<goal_id>", methods = ["GET"])
+def get_by_goal_id(goal_id):
+    goal = validate_model(Goal, goal_id)
 
+    return {
+        "goal": goal.to_dict()
+        }, 200
 # PUT METHOD - update goal by goal_id
+@goal_bp.route("/<goal_id>", methods = ["PUT"])
+def update_goal(goal_id):
+    goal = validate_model(Goal,goal_id)
+
+    request_body = request.get_json()
+
+    goal.goal_title = request_body["title"]
+
+    db.session.commit()
+
+    return jsonify({
+        "goal": {
+            "id": goal.goal_id,
+            "title": goal.goal_title
+            }
+        }), 200
 
 # DELETE METHOD - delete a goal by goal_id
+@goal_bp.route("/<goal_id>", methods=["DELETE"])
+def delete_goal(goal_id):
+
+    goal = validate_model(Goal, goal_id)
+        
+    db.session.delete(goal)
+    db.session.commit()
+
+    return { "details": f'Goal {goal_id} "{goal.goal_title}" successfully deleted'}
