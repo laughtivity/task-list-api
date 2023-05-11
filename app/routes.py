@@ -1,9 +1,13 @@
 from flask import Blueprint, jsonify, request, abort, make_response
 from app import db
 from app.models.task import Task
+from app.models.goal import Goal
+from datetime import datetime
+
 
 # BLUEPRINTS #
 task_bp = Blueprint("tasks", __name__, url_prefix = "/tasks")
+goal_bp = Blueprint("goals", __name__, url_prefix = "/goals")
 
 # HELPER FUNCTIONS #
 def validate_model(cls, model_id):
@@ -107,7 +111,54 @@ def delete_task(task_id):
 
 ## WAVE 3 - Creating Custom Endpoints 
 # PUT METHOD - update is_complete to true
-@task_bp.route("/<task_id>/mark_complete", methods = ["PUT"])
+@task_bp.route("/<task_id>/mark_complete", methods = ["PATCH"])
+def mark_complete(task_id):
+    task = validate_model(Task, task_id)
+
+    task.is_complete = True
+    task.completed_at = datetime.utcnow()
+
+    db.session.commit()
+    slack_bot_notification(task)
+
+    return {
+        "task": task.to_dict()
+        }, 200
 
 # PUT METHOD - update is_complete to false
-@task_bp.route("/<task_id>/mark_incomplete", methods = ["PUT"])
+@task_bp.route("/<task_id>/mark_incomplete", methods = ["PATCH"])
+def mark_incomplete(task_id):
+    task = validate_model(Task, task_id)
+
+    task.is_complete = False
+    task.completed_at = None
+
+    db.session.commit()
+
+    return {
+        "task": task.to_dict()
+        }, 200
+
+# slack bot task completed notification
+# https://www.mechanicalgirl.com/post/building-simple-slack-app-using-flask/
+# https://api.slack.com/methods/chat.postMessage/test
+# https://realpython.com/getting-started-with-the-slack-api-using-python-and-flask/
+# https://stackoverflow.com/questions/41546883/what-is-the-use-of-python-dotenv
+# https://slack.dev/python-slack-sdk/web/index.html
+# https://github.com/SlackAPI/python-slack-sdk
+
+def slack_bot_notification(task):
+    from dotenv import load_dotenv
+    import os
+    
+    load_dotenv()
+    slack_token= os.environ.get("SLACK_API_KEY")
+
+    from slack_sdk import WebClient
+    client = WebClient(token=slack_token)
+    # print(slack_token)
+
+    response = client.chat_postMessage(
+        channel="C056SCXBCJ3",
+        text = f"Someone just completed the task {task.title}" 
+        )
