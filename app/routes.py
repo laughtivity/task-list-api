@@ -3,6 +3,7 @@ from app import db
 from app.models.task import Task
 from app.models.goal import Goal
 from datetime import datetime
+import requests
 
 
 # BLUEPRINTS #
@@ -146,21 +147,39 @@ def mark_incomplete(task_id):
 # https://stackoverflow.com/questions/41546883/what-is-the-use-of-python-dotenv
 # https://slack.dev/python-slack-sdk/web/index.html
 # https://github.com/SlackAPI/python-slack-sdk
-def slack_bot_notification(task):
-    from dotenv import load_dotenv
-    import os
+# alternative method: use url and request.post() - will need Bearer
+####################################
+# PYTHON SLACK IMPLEMENTATION METHOD
+####################################
+# def slack_bot_notification(task):
+#     from dotenv import load_dotenv
+#     import os
     
-    load_dotenv()
-    slack_token= os.environ.get("SLACK_API_KEY")
+#     load_dotenv()
+#     slack_token= os.environ.get("SLACK_API_KEY")
 
-    from slack_sdk import WebClient
-    client = WebClient(token=slack_token)
-    # print(slack_token)
+#     from slack_sdk import WebClient
+#     client = WebClient(token=slack_token)
+#     # print(slack_token)
 
-    response = client.chat_postMessage(
-        channel="C056SCXBCJ3",
-        text = f"Someone just completed the task {task.title}" 
-        )
+#     response = client.chat_postMessage(
+#         channel="C056SCXBCJ3",
+#         text = f"Someone just completed the task {task.title}" 
+#         )
+### SLACK IMPLEMENTATION USING HTTP REQUESTS
+def slack_bot_notification(task):
+    import os
+
+    api_url = "https://slack.com/api/chat.postMessage"
+    slack_token = os.environ.get("SLACK_WEB_API_KEY")
+    headers = {"Authorization":slack_token}
+    body = {
+        "channel": "task-notifications",
+        "text": "Hello, World Again!"
+        }
+
+    response = requests.post(api_url, headers=headers, data=body)
+
     
 # POST METHOD - create a goal
 @goal_bp.route("", methods=["POST"])
