@@ -34,7 +34,7 @@ def slack_bot_notification(task):
         "channel": "task-notifications",
         "text": f"Someone just completed the task {task.title}" 
         }
-    response = requests.post(api_url, headers=headers, data=body)
+    response = requests.post(api_url, headers=headers, params=body)
 
 
 # POST METHOD - create task
