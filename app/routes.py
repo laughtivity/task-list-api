@@ -29,12 +29,12 @@ def slack_bot_notification(task):
 
     api_url = "https://slack.com/api/chat.postMessage"
     slack_token = os.environ.get("SLACK_WEB_API_KEY")
-    headers = { "Authorization": f"{slack_token}"}
+    headers = {"Authorization": slack_token}
     body = {
         "channel": "task-notifications",
         "text": f"Someone just completed the task {task.title}" 
         }
-    response = requests.post(api_url, headers=headers, data=jsonify(body))
+    response = requests.post(api_url, headers=headers, data=body)
 
 
 # POST METHOD - create task
