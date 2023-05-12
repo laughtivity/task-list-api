@@ -57,8 +57,9 @@ def get_all_tasks():
 
     tasks = Task.query.all()
 
-    for task in tasks:
-        tasks_response.append(task.to_dict())
+    # for task in tasks:
+    #     tasks_response.append(task.to_dict())
+    tasks_response = [task.to_dict() for task in tasks]
 
     # https://www.programiz.com/python-programming/methods/list/sort
     # sort by asc/desc
@@ -148,8 +149,9 @@ def get_all_goals():
     goals_response = []
     goals = Goal.query.all()
 
-    for goal in goals:
-        goals_response.append(goal.to_dict())
+    # for goal in goals:
+    #     goals_response.append(goal.to_dict())
+    goals_response = [goal.to_dict() for goal in goals]
 
     # https://www.programiz.com/python-programming/methods/list/sort
     sort_query = request.args.get("sort")
@@ -212,8 +214,9 @@ def read_all_tasks_for_goal_id(goal_id):
     goal = validate_model(Goal, goal_id)
     task_response = []
 
-    for task in goal.tasks:
-        task_response.append(task.to_dict())
+    # for task in goal.tasks:
+    #     task_response.append(task.to_dict())
+    task_response =[task.to_dict() for task in goal.tasks]
 
     return jsonify({
         "id": goal.goal_id,
