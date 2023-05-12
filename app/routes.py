@@ -54,7 +54,6 @@ def create_task():
 @task_bp.route("", methods = ["GET"])
 def get_all_tasks():
     tasks_response = []
-
     tasks = Task.query.all()
 
     # for task in tasks:
@@ -68,6 +67,7 @@ def get_all_tasks():
         tasks_response.sort(key=lambda x: x.get('title'))
     elif sort_query == "desc":
         tasks_response.sort(key=lambda x: x.get('title'), reverse=True)
+    # tasks_response = check_sort(tasks_response)
 
     return jsonify(tasks_response)
 
@@ -152,8 +152,9 @@ def get_all_goals():
     # for goal in goals:
     #     goals_response.append(goal.to_dict())
     goals_response = [goal.to_dict() for goal in goals]
-
-    # https://www.programiz.com/python-programming/methods/list/sort
+    # goals_response = check_sort(goals_response)
+    
+    # # https://www.programiz.com/python-programming/methods/list/sort
     sort_query = request.args.get("sort")
     if sort_query == "asc":
         goals_response.sort(key=lambda x: x.get('title'))
@@ -256,4 +257,55 @@ def read_all_tasks_for_goal_id(goal_id):
 #         text = f"Someone just completed the task {task.title}" 
 #         )
 
+
+# sort query
+# if filterby_query = True
+# check for query
+#### TESTING ######
+# @goal_bp.route("", methods=["GET"])
+# def get_all_goals():
+#     goals_response = []
+#     goals = Goal.query.all()
+
+#     goals_response = [goal.to_dict() for goal in goals]
+    
+#     query_lst = check_query()
+
+#     if query_lst:
+#         goals_response = filter_by_query(goals, goals_response, query_lst)
+        
+#     goals_response = check_sort(goals_response)
+
+#     # # https://www.programiz.com/python-programming/methods/list/sort
+#     # sort_query = request.args.get("sort")
+#     # if sort_query == "asc":
+#     #     goals_response.sort(key=lambda x: x.get('title'))
+#     # elif sort_query == "desc":
+#     #     goals_response.sort(key=lambda x: x.get('title'), reverse=True)
+
+#     return jsonify(goals_response)
+
+# def check_query():
+#     query_lst = []
+#     sort_query = request.args.get("sort")
+#     filter_query_by_title = request.args.get("title")
+#     filter_query_by_id = request.args.get("id")
+
+#     if sort_query:
+#         query_lst.append(sort_query)
+#     elif filter_query_by_title:
+#         query_lst.append(filter_query_by_title)
+#     elif filter_query_by_id:
+#         query_lst.append(filter_query_by_id)
+
+#     return query_lst
+
+# def check_sort(lst):
+#     sort_query = request.args.get("sort")
+
+#     if sort_query == "asc":
+#         return lst.sort(key=lambda x: x.get('title'))
+#     elif sort_query == "desc":
+#         return lst.sort(key=lambda x: x.get('title'), reverse=True)
+#     return lst
 
