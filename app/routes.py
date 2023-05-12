@@ -48,7 +48,6 @@ def create_task():
     
     db.session.add(new_task)
     db.session.commit()
-
     return jsonify({"task": new_task.to_dict()}), 201
 
 # GET METHOD - read all task
@@ -81,8 +80,8 @@ def get_by_task_id(task_id):
 @task_bp.route("/<task_id>", methods = ["PUT"])
 def update_task(task_id):
     task = validate_model(Task,task_id)
-
     request_body = request.get_json()
+
     try:
         task.title = request_body["title"]
         task.description = request_body["description"]
@@ -90,7 +89,6 @@ def update_task(task_id):
         return jsonify({"details": "Missing data"}),400
 
     db.session.commit()
-
     return jsonify({"task": task.to_dict()}), 200
 
 # DELETE METHOD - delete a task by id
@@ -186,7 +184,6 @@ def delete_goal(goal_id):
         
     db.session.delete(goal)
     db.session.commit()
-
     return { "details": f'Goal {goal_id} "{goal.title}" successfully deleted'}
 
 
@@ -195,7 +192,7 @@ def delete_goal(goal_id):
 @goal_bp.route("/<goal_id>/tasks", methods = ["POST"])
 def add_tasks_to_existing_goal(goal_id):
     goal = validate_model(Goal, goal_id)
-    
+
     request_body = request.get_json()
     task_ids = request_body["task_ids"]
 
@@ -214,7 +211,7 @@ def add_tasks_to_existing_goal(goal_id):
 def read_all_tasks_for_goal_id(goal_id):
     goal = validate_model(Goal, goal_id)
     task_response = []
-    
+
     for task in goal.tasks:
         task_response.append(task.to_dict())
 
