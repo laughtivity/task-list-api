@@ -22,19 +22,19 @@ def validate_model(cls, model_id):
     
     return model
 
-# def slack_bot_notification(task):
-# # SLACK IMPLEMENTATION USING HTTP REQUESTS
-# # https://stackoverflow.com/questions/63899742/how-to-use-mock-in-request-post-to-an-external-api
-#     import os
+def slack_bot_notification(task):
+# SLACK IMPLEMENTATION USING HTTP REQUESTS
+# https://stackoverflow.com/questions/63899742/how-to-use-mock-in-request-post-to-an-external-api
+    import os
 
-#     api_url = "https://slack.com/api/chat.postMessage"
-#     slack_token = os.environ.get("SLACK_WEB_API_KEY")
-#     headers = {"Authorization":slack_token}
-#     body = {
-#         "channel": "task-notifications",
-#         "text": f"Someone just completed the task {task.title}" 
-#         }
-#     response = requests.post(api_url, headers=headers, data=body)
+    api_url = "https://slack.com/api/chat.postMessage"
+    slack_token = os.environ.get("SLACK_WEB_API_KEY")
+    headers = {f"Authorization:{slack_token}"}
+    body = {
+        "channel": "task-notifications",
+        "text": f"Someone just completed the task {task.title}" 
+        }
+    response = requests.post(api_url, headers=headers, data=jsonify(body))
 
 
 # POST METHOD - create task
@@ -114,20 +114,6 @@ def mark_complete(task_id):
     db.session.commit()
     slack_bot_notification(task)
     return {"task": task.to_dict()}, 200
-
-def slack_bot_notification(task):
-# SLACK IMPLEMENTATION USING HTTP REQUESTS
-# https://stackoverflow.com/questions/63899742/how-to-use-mock-in-request-post-to-an-external-api
-    import os
-
-    api_url = "https://slack.com/api/chat.postMessage"
-    slack_token = os.environ.get("SLACK_WEB_API_KEY")
-    headers = {"Authorization":slack_token}
-    body = {
-        "channel": "task-notifications",
-        "text": f"Someone just completed the task {task.title}" 
-        }
-    response = requests.post(api_url, headers=headers, data=body)
 
 # PUT METHOD - update is_complete to false
 @task_bp.route("/<task_id>/mark_incomplete", methods = ["PATCH"])
